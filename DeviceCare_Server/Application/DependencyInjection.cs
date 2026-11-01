@@ -10,6 +10,7 @@ namespace DeviceCare.Application
         {
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IInventoryService, InventoryService>();
+            services.AddScoped<IRepairService, RepairService>();
 
             return services;
         }
