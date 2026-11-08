@@ -6,11 +6,17 @@ import Auth from "./features/auth/Auth";
 import Layout from "./components/Layout";
 import CustomerList from "./features/customer/CustomerList";
 import InventoryList from "./features/inventory/InventoryList";
+import RepairList from "./features/repair/RepairList";
+import CreateRepair from "./features/repair/CreateRepair";
+import RepairDetail from "./features/repair/RepairDetail";
+import PublicLookup from "./features/public/PublicLookup";
 import useAuthStore from "./store/authStore";
 import authApi from "./api/authApi";
 import {
   Contact2,
   Boxes,
+  ScrollText,
+  PlusCircle,
   Mail,
   PhoneCall,
   BadgeCheck
@@ -47,26 +53,46 @@ const DashboardOverview = () => {
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-2">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 450, damping: 25 }}
-            onClick={() => navigate("/customers")}
-            className="flex items-center space-x-1.5 px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-300 transition-colors cursor-pointer"
+            onClick={() => navigate("/create")}
+            className="flex items-center space-x-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors cursor-pointer"
           >
-            <Contact2 size={15} />
-            <span>Xem khách hàng</span>
+            <PlusCircle size={15} />
+            <span>Tiếp nhận máy</span>
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 450, damping: 25 }}
+            onClick={() => navigate("/repairs")}
+            className="flex items-center space-x-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-300 transition-colors cursor-pointer"
+          >
+            <ScrollText size={15} />
+            <span>Xem phiếu sửa</span>
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 450, damping: 25 }}
             onClick={() => navigate("/inventory")}
-            className="flex items-center space-x-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors cursor-pointer"
+            className="flex items-center space-x-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-300 transition-colors cursor-pointer"
           >
             <Boxes size={15} />
-            <span>Xem kho linh kiện</span>
+            <span>Kho linh kiện</span>
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 450, damping: 25 }}
+            onClick={() => navigate("/customers")}
+            className="flex items-center space-x-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-300 transition-colors cursor-pointer"
+          >
+            <Contact2 size={15} />
+            <span>Khách hàng</span>
           </motion.button>
         </div>
       </div>
@@ -143,6 +169,7 @@ function App() {
       <Toaster position="top-right" />
       <Routes>
         <Route path="/auth" element={<Auth />} />
+        <Route path="/lookup" element={<PublicLookup />} />
 
         <Route
           element={
@@ -154,6 +181,9 @@ function App() {
           <Route path="/dashboard" element={<DashboardOverview />} />
           <Route path="/customers" element={<CustomerList />} />
           <Route path="/inventory" element={<InventoryList />} />
+          <Route path="/repairs" element={<RepairList />} />
+          <Route path="/create" element={<CreateRepair />} />
+          <Route path="/repairs/:id" element={<RepairDetail />} />
         </Route>
 
         {/* Chuyển hướng mặc định */}

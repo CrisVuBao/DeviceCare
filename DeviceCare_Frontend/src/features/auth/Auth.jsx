@@ -143,7 +143,7 @@ const Auth = () => {
 
           <div className="mt-6 pt-5 border-t border-slate-100 text-center">
             <Link 
-              to="/" 
+              to="/lookup" 
               className="inline-flex items-center space-x-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
             >
               <Search size={16} />

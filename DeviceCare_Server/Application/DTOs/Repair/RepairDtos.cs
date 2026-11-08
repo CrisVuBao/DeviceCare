@@ -18,6 +18,7 @@ namespace DeviceCare.Application.DTOs.Repair
 
         public string? ErrorDescription { get; set; }
         public string? Note { get; set; }
+        public string? ImageUrl { get; set; }
         public decimal LaborCost { get; set; } = 0;
         public int? EmployeeId { get; set; }
         public int? AssignedTechnicianId
@@ -33,6 +34,7 @@ namespace DeviceCare.Application.DTOs.Repair
         public string DeviceName { get; set; } = string.Empty;
         public string? ErrorDescription { get; set; }
         public string? Note { get; set; }
+        public string? ImageUrl { get; set; }
         public decimal LaborCost { get; set; }
         public int? EmployeeId { get; set; }
         public int? AssignedTechnicianId
@@ -72,6 +74,11 @@ namespace DeviceCare.Application.DTOs.Repair
     public class RepairDetailDto
     {
         public int RepairId { get; set; }
+        public int Id
+        {
+            get => RepairId;
+            set => RepairId = value;
+        }
         public string RepairCode { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string DeviceName { get; set; } = string.Empty;

@@ -8,9 +8,12 @@ namespace DeviceCare.Application
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+            services.AddMemoryCache();
+
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IInventoryService, InventoryService>();
             services.AddScoped<IRepairService, RepairService>();
+            services.AddScoped<IDashboardService, DashboardService>();
 
             return services;
         }

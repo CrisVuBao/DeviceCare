@@ -28,6 +28,7 @@ namespace DeviceCare.Infrastructure
             services.AddScoped<IInventoryRepository, InventoryRepository>();
             services.AddScoped<IRepairRepository, RepairRepository>();
             services.AddScoped<IRepairPartRepository, RepairPartRepository>();
+            services.AddScoped<IDashboardRepository, DashboardRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;

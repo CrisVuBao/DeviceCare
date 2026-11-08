@@ -5,6 +5,11 @@ namespace DeviceCare.Application.DTOs.Repair
     public class RepairListDto
     {
         public int Id { get; set; }
+        public int RepairId
+        {
+            get => Id;
+            set => Id = value;
+        }
         public string RepairCode { get; set; } = string.Empty;
         public string DeviceName { get; set; } = string.Empty;
         public string CustomerName { get; set; } = string.Empty;

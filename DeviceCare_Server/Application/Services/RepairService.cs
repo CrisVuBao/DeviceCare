@@ -44,6 +44,7 @@ namespace DeviceCare.Application.Services
                 DeviceName = model.DeviceName.Trim(),
                 ErrorDescription = model.ErrorDescription?.Trim(),
                 Note = model.Note?.Trim(),
+                ImageUrl = model.ImageUrl?.Trim(),
                 LaborCost = model.LaborCost,
                 TotalAmount = model.LaborCost,
                 CustomerId = customer.CustomerId,
@@ -220,6 +221,7 @@ namespace DeviceCare.Application.Services
             repair.DeviceName = model.DeviceName.Trim();
             repair.ErrorDescription = model.ErrorDescription?.Trim();
             repair.Note = model.Note?.Trim();
+            if (!string.IsNullOrEmpty(model.ImageUrl)) repair.ImageUrl = model.ImageUrl;
             repair.LaborCost = model.LaborCost;
             if (model.EmployeeId.HasValue)
             {

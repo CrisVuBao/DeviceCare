@@ -10,6 +10,7 @@ namespace DeviceCare.Application.Contracts.Persistence
         IInventoryRepository Inventories { get; }
         IRepairRepository Repairs { get; }
         IRepairPartRepository RepairParts { get; }
+        IDashboardRepository Dashboards { get; }
 
         Task CompleteAsync();
         Task<IDbContextTransaction> BeginTransactionAsync();
