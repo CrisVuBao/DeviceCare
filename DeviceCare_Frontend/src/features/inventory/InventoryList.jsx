@@ -14,6 +14,7 @@ import {
   X,
   Check,
   PackagePlus,
+  ArrowRight,
   ArrowUpRight,
   ArrowDownLeft,
   TabletSmartphone,
@@ -809,9 +810,10 @@ const InventoryList = () => {
                     onChange={(e) => setImportData({ ...importData, quantity: e.target.value })}
                     className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white"
                   />
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Tồn hiện tại: <strong>{importModalItem.quantity}</strong> $\rightarrow$ Sau khi nhập:{" "}
-                    <strong>{(importModalItem.quantity || 0) + Number(importData.quantity || 0)}</strong>
+                  <p className="text-[11px] text-slate-500 mt-1 flex items-center">
+                    <span>Tồn hiện tại: <strong>{importModalItem.quantity}</strong></span>
+                    <ArrowRight size={12} className="mx-1.5 text-slate-400 shrink-0" />
+                    <span>Sau khi nhập: <strong>{(importModalItem.quantity || 0) + Number(importData.quantity || 0)}</strong></span>
                   </p>
                 </div>
 
@@ -947,8 +949,12 @@ const InventoryList = () => {
                               <td className="py-2.5 px-3 text-center font-bold font-mono">
                                 {isImport ? `+${tx.quantity}` : `-${tx.quantity}`}
                               </td>
-                              <td className="py-2.5 px-3 text-center text-slate-500 font-mono">
-                                {tx.quantityBefore} $\rightarrow$ {tx.quantityAfter}
+                              <td className="py-2.5 px-3 text-center text-slate-600 font-mono">
+                                <span className="inline-flex items-center gap-1.5 font-semibold text-xs">
+                                  <span className="text-slate-500">{tx.quantityBefore}</span>
+                                  <ArrowRight size={12} className="text-slate-400 shrink-0" />
+                                  <span className="text-slate-900 font-bold">{tx.quantityAfter}</span>
+                                </span>
                               </td>
                               <td className="py-2.5 px-3 text-slate-600">
                                 {tx.reason || (tx.repairCode ? `Gắn vào phiếu ${tx.repairCode}` : "-")}

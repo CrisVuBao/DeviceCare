@@ -1,3 +1,5 @@
+using System;
+
 namespace DeviceCare.Application.DTOs.Auth
 {
     public class UserListDto
@@ -8,5 +10,8 @@ namespace DeviceCare.Application.DTOs.Auth
         public string PhoneNumber { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public string? Position { get; set; }
+        public decimal Salary { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }

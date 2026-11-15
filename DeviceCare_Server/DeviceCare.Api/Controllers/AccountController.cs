@@ -309,7 +309,7 @@ namespace DeviceCare.Api.Controllers
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _userManager.Users.ToListAsync();
+            var users = await _userManager.Users.Include(u => u.Employee).ToListAsync();
             var userList = new List<UserListDto>();
             
             foreach (var user in users)
@@ -322,7 +322,10 @@ namespace DeviceCare.Api.Controllers
                     Email = user.Email ?? string.Empty,
                     PhoneNumber = user.PhoneNumber ?? string.Empty,
                     Role = roles.FirstOrDefault() ?? "Employee",
-                    Status = user.Status
+                    Status = user.Status,
+                    Position = user.Employee?.Position ?? "Kỹ thuật viên",
+                    Salary = user.Employee?.Salary ?? 0,
+                    CreatedAt = user.CreatedAt
                 });
             }
 
@@ -421,6 +424,92 @@ namespace DeviceCare.Api.Controllers
             }
 
             return Ok(Response<string>.SuccessResult("Xóa tài khoản thành công", "Success"));
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("users/{id}")]
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(Response<string>.Failure("Dữ liệu không hợp lệ"));
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound(Response<string>.Failure("Không tìm thấy tài khoản"));
+            }
+
+            var existingPhone = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber && u.Id != user.Id);
+            if (existingPhone != null)
+            {
+                return BadRequest(Response<string>.Failure("Số điện thoại đã được người khác sử dụng"));
+            }
+
+            user.FullName = model.FullName;
+            user.PhoneNumber = model.PhoneNumber;
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                return BadRequest(Response<string>.Failure("Cập nhật thông tin thất bại"));
+            }
+
+            if (!string.IsNullOrEmpty(model.Role))
+            {
+                var currentRoles = await _userManager.GetRolesAsync(user);
+                await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                string newRole = model.Role == "Admin" ? "Admin" : "Employee";
+                await _userManager.AddToRoleAsync(user, newRole);
+            }
+
+            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == user.Id);
+            if (employee == null)
+            {
+                employee = new Employee
+                {
+                    UserId = user.Id,
+                    Position = model.Position ?? "Kỹ thuật viên",
+                    Salary = model.Salary,
+                    HireDate = DateTime.UtcNow,
+                    IsActive = user.Status == "Active"
+                };
+                _context.Employees.Add(employee);
+            }
+            else
+            {
+                employee.Position = model.Position ?? employee.Position;
+                employee.Salary = model.Salary;
+            }
+            await _context.SaveChangesAsync();
+
+            return Ok(Response<string>.SuccessResult("Cập nhật thông tin nhân viên thành công", "Success"));
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("users/{id}/reset-password")]
+        public async Task<IActionResult> ResetPassword(string id, [FromBody] ResetPasswordDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(Response<string>.Failure("Dữ liệu không hợp lệ"));
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound(Response<string>.Failure("Không tìm thấy tài khoản"));
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return BadRequest(Response<string>.Failure(errors));
+            }
+
+            return Ok(Response<string>.SuccessResult("Đặt lại mật khẩu thành công", "Success"));
         }
     }
 }

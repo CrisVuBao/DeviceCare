@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
-  Smartphone,
   PhoneCall,
-  User,
   MapPin,
   Plus,
   Trash2,
@@ -12,14 +11,14 @@ import {
   Save,
   X,
   Printer,
-  ShieldCheck,
   Receipt,
   Cpu,
   Clock,
   ExternalLink,
   AlertTriangle,
   Check,
-  Search
+  Search,
+  Award
 } from "lucide-react";
 import repairApi from "../../api/repairApi";
 import inventoryApi from "../../api/inventoryApi";
@@ -905,7 +904,7 @@ const RepairDetail = () => {
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
-                  <ShieldCheck size={16} className="text-emerald-600" />
+                  <Award size={16} className="text-emerald-600" />
                   <span>Bảo hành</span>
                 </h2>
                 <span
@@ -1003,346 +1002,411 @@ const RepairDetail = () => {
         </div>
       </div>
 
-      {showPartModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-5 border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
-                <Cpu size={16} className="text-blue-600" />
-                <span>Thêm linh kiện sửa chữa</span>
-              </h3>
-              <button
-                onClick={() => setShowPartModal(false)}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddPart} className="space-y-4">
-              <div className="space-y-1 relative" ref={dropdownRef}>
-                <label className="text-xs font-semibold text-slate-700 block">
-                  Linh kiện trong kho <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  />
-                  <input
-                    type="text"
-                    required
-                    placeholder="Gõ tên hoặc chọn linh kiện từ kho..."
-                    value={partSearchTerm}
-                    onFocus={() => setIsDropdownOpen(true)}
-                    onChange={(e) => {
-                      setPartSearchTerm(e.target.value);
-                      setIsDropdownOpen(true);
-                      setSelectedInventoryId("");
-                    }}
-                    className="w-full pl-9 pr-8 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white transition-colors"
-                  />
-                  {selectedInventoryId ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedInventoryId("");
-                        setPartSearchTerm("");
-                        setIsDropdownOpen(true);
-                      }}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
-                      title="Chọn lại linh kiện"
-                    >
-                      <X size={14} />
-                    </button>
-                  ) : null}
-                </div>
-
-                {isDropdownOpen && (
-                  <div className="absolute z-30 top-full left-0 mt-1 w-full max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg divide-y divide-slate-100">
-                    {inventories.filter((item) =>
-                      item.name?.toLowerCase().includes(partSearchTerm.toLowerCase())
-                    ).length === 0 ? (
-                      <div className="p-3 text-xs text-slate-500 text-center">
-                        Không tìm thấy linh kiện phù hợp trong kho
-                      </div>
-                    ) : (
-                      inventories
-                        .filter((item) =>
-                          item.name?.toLowerCase().includes(partSearchTerm.toLowerCase())
-                        )
-                        .map((item) => (
-                          <div
-                            key={item.inventoryId}
-                            onClick={() => {
-                              setSelectedInventoryId(item.inventoryId);
-                              setPartSearchTerm(item.name);
-                              setIsDropdownOpen(false);
-                            }}
-                            className={`p-2.5 cursor-pointer hover:bg-blue-50 transition-colors flex items-center justify-between text-xs ${
-                              selectedInventoryId === item.inventoryId
-                                ? "bg-blue-50/70"
-                                : ""
-                            }`}
-                          >
-                            <div>
-                              <div className="font-semibold text-slate-800">
-                                {item.name}
-                              </div>
-                              <div className="text-[11px] text-slate-500">
-                                Tồn kho:{" "}
-                                <strong className="text-slate-700">{item.quantity}</strong>
-                              </div>
-                            </div>
-                            <div className="font-mono font-bold text-blue-600">
-                              {Number(
-                                item.salePrice || item.sellingPrice || 0
-                              ).toLocaleString("vi-VN")}{" "}
-                              đ
-                            </div>
-                          </div>
-                        ))
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">
-                  Số lượng sử dụng
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={partQuantity}
-                  onChange={(e) =>
-                    setPartQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))
-                  }
-                  className="w-full px-3 py-1.5 text-sm font-semibold bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white"
-                />
-              </div>
-
-              <div className="pt-2 border-t border-slate-100 flex justify-end space-x-2">
+      <AnimatePresence>
+        {showPartModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
+              onClick={() => setShowPartModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 12 }}
+              transition={{ type: "spring", stiffness: 420, damping: 28 }}
+              className="relative bg-white rounded-xl shadow-2xl w-full max-w-md p-5 border border-slate-200 z-10 overflow-hidden space-y-4"
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+                  <Cpu size={16} className="text-blue-600" />
+                  <span>Thêm linh kiện sửa chữa</span>
+                </h3>
                 <button
                   type="button"
                   onClick={() => setShowPartModal(false)}
-                  className="px-3.5 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer transition-colors"
                 >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={addingPart || !selectedInventoryId}
-                  className="px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm disabled:opacity-50 cursor-pointer"
-                >
-                  {addingPart ? "Đang thêm..." : "Thêm vào phiếu"}
+                  <X size={18} />
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleAddPart} className="space-y-4">
+                <div className="space-y-1 relative" ref={dropdownRef}>
+                  <label className="text-xs font-semibold text-slate-700 block">
+                    Linh kiện trong kho <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Search
+                      size={16}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                    />
+                    <input
+                      type="text"
+                      required
+                      placeholder="Gõ tên hoặc chọn linh kiện từ kho..."
+                      value={partSearchTerm}
+                      onFocus={() => setIsDropdownOpen(true)}
+                      onChange={(e) => {
+                        setPartSearchTerm(e.target.value);
+                        setIsDropdownOpen(true);
+                        setSelectedInventoryId("");
+                      }}
+                      className="w-full pl-9 pr-8 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white transition-colors"
+                    />
+                    {selectedInventoryId ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedInventoryId("");
+                          setPartSearchTerm("");
+                          setIsDropdownOpen(true);
+                        }}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
+                        title="Chọn lại linh kiện"
+                      >
+                        <X size={14} />
+                      </button>
+                    ) : null}
+                  </div>
+
+                  {isDropdownOpen && (
+                    <div className="absolute z-30 top-full left-0 mt-1 w-full max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg divide-y divide-slate-100">
+                      {inventories.filter((item) =>
+                        item.name?.toLowerCase().includes(partSearchTerm.toLowerCase())
+                      ).length === 0 ? (
+                        <div className="p-3 text-xs text-slate-500 text-center">
+                          Không tìm thấy linh kiện phù hợp trong kho
+                        </div>
+                      ) : (
+                        inventories
+                          .filter((item) =>
+                            item.name?.toLowerCase().includes(partSearchTerm.toLowerCase())
+                          )
+                          .map((item) => (
+                            <div
+                              key={item.inventoryId}
+                              onClick={() => {
+                                setSelectedInventoryId(item.inventoryId);
+                                setPartSearchTerm(item.name);
+                                setIsDropdownOpen(false);
+                              }}
+                              className={`p-2.5 cursor-pointer hover:bg-blue-50 transition-colors flex items-center justify-between text-xs ${
+                                selectedInventoryId === item.inventoryId
+                                  ? "bg-blue-50/70"
+                                  : ""
+                              }`}
+                            >
+                              <div>
+                                <div className="font-semibold text-slate-800">
+                                  {item.name}
+                                </div>
+                                <div className="text-[11px] text-slate-500">
+                                  Tồn kho:{" "}
+                                  <strong className="text-slate-700">{item.quantity}</strong>
+                                </div>
+                              </div>
+                              <div className="font-mono font-bold text-blue-600">
+                                {Number(
+                                  item.salePrice || item.sellingPrice || 0
+                                ).toLocaleString("vi-VN")}{" "}
+                                đ
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Số lượng sử dụng
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={partQuantity}
+                    onChange={(e) =>
+                      setPartQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))
+                    }
+                    className="w-full px-3 py-1.5 text-sm font-semibold bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white"
+                  />
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowPartModal(false)}
+                    className="px-3.5 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addingPart || !selectedInventoryId}
+                    className="px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm disabled:opacity-50 cursor-pointer"
+                  >
+                    {addingPart ? "Đang thêm..." : "Thêm vào phiếu"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
-      {checkoutModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-5 border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900">
-                Trả máy & Xuất hóa đơn
-              </h3>
-              <button
-                onClick={() => setCheckoutModal((prev) => ({ ...prev, isOpen: false }))}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleCheckoutSubmit} className="space-y-3">
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
-                <span className="text-xs font-semibold text-blue-900">
-                  Tổng tiền cần thanh toán:
-                </span>
-                <span className="text-base font-bold font-mono text-blue-700">
-                  {Number(repair.totalAmount || 0).toLocaleString("vi-VN")} đ
-                </span>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">
-                  Hình thức thanh toán
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: "Cash", label: "Tiền mặt" },
-                    { id: "Transfer", label: "Chuyển khoản" },
-                    { id: "Card", label: "Quẹt thẻ" }
-                  ].map((pm) => (
-                    <button
-                      key={pm.id}
-                      type="button"
-                      onClick={() =>
-                        setCheckoutModal((prev) => ({ ...prev, paymentMethod: pm.id }))
-                      }
-                      className={`py-1.5 px-2 text-xs font-medium rounded-lg border text-center transition-colors cursor-pointer ${
-                        checkoutModal.paymentMethod === pm.id
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
-                      }`}
-                    >
-                      {pm.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">
-                  Thời hạn bảo hành
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { days: 0, label: "Không BH" },
-                    { days: 7, label: "7 ngày" },
-                    { days: 30, label: "1 tháng" },
-                    { days: 90, label: "3 tháng" },
-                    { days: 180, label: "6 tháng" },
-                    { days: 365, label: "1 năm" }
-                  ].map((pkg) => (
-                    <button
-                      key={pkg.days}
-                      type="button"
-                      onClick={() =>
-                        setCheckoutModal((prev) => ({
-                          ...prev,
-                          warrantyDays: pkg.days
-                        }))
-                      }
-                      className={`px-2.5 py-1 text-xs font-medium rounded border cursor-pointer ${
-                        checkoutModal.warrantyDays === pkg.days
-                          ? "bg-slate-800 text-white border-slate-800"
-                          : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
-                      }`}
-                    >
-                      {pkg.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">
-                  Điều khoản bảo hành
-                </label>
-                <textarea
-                  rows={2}
-                  value={checkoutModal.terms}
-                  onChange={(e) =>
-                    setCheckoutModal((prev) => ({ ...prev, terms: e.target.value }))
-                  }
-                  className="w-full p-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white resize-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">
-                  Ghi chú hóa đơn
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ghi chú thêm..."
-                  value={checkoutModal.note}
-                  onChange={(e) =>
-                    setCheckoutModal((prev) => ({ ...prev, note: e.target.value }))
-                  }
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white"
-                />
-              </div>
-
-              <div className="pt-2 border-t border-slate-100 flex justify-end space-x-2">
+      <AnimatePresence>
+        {checkoutModal.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
+              onClick={() => setCheckoutModal((prev) => ({ ...prev, isOpen: false }))}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 12 }}
+              transition={{ type: "spring", stiffness: 420, damping: 28 }}
+              className="relative bg-white rounded-xl shadow-2xl w-full max-w-md p-5 border border-slate-200 z-10 overflow-hidden space-y-4"
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 className="text-sm font-bold text-slate-900">
+                  Trả máy & Xuất hóa đơn
+                </h3>
                 <button
                   type="button"
                   onClick={() => setCheckoutModal((prev) => ({ ...prev, isOpen: false }))}
-                  className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer transition-colors"
                 >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={checkingOut}
-                  className="px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm disabled:opacity-50 cursor-pointer"
-                >
-                  {checkingOut ? "Đang xử lý..." : "Xác nhận trả máy"}
+                  <X size={18} />
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleCheckoutSubmit} className="space-y-3">
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                  <span className="text-xs font-semibold text-blue-900">
+                    Tổng tiền cần thanh toán:
+                  </span>
+                  <span className="text-base font-bold font-mono text-blue-700">
+                    {Number(repair.totalAmount || 0).toLocaleString("vi-VN")} đ
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Hình thức thanh toán
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: "Cash", label: "Tiền mặt" },
+                      { id: "Transfer", label: "Chuyển khoản" },
+                      { id: "Card", label: "Quẹt thẻ" }
+                    ].map((pm) => (
+                      <button
+                        key={pm.id}
+                        type="button"
+                        onClick={() =>
+                          setCheckoutModal((prev) => ({ ...prev, paymentMethod: pm.id }))
+                        }
+                        className={`py-1.5 px-2 text-xs font-medium rounded-lg border text-center transition-colors cursor-pointer ${
+                          checkoutModal.paymentMethod === pm.id
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                        }`}
+                      >
+                        {pm.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 flex items-center">
+                    <Award size={14} className="text-emerald-600 mr-1" />
+                    <span>Thời hạn bảo hành</span>
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { days: 0, label: "Không BH" },
+                      { days: 7, label: "7 ngày" },
+                      { days: 30, label: "1 tháng" },
+                      { days: 90, label: "3 tháng" },
+                      { days: 180, label: "6 tháng" },
+                      { days: 365, label: "1 năm" }
+                    ].map((pkg) => (
+                      <button
+                        key={pkg.days}
+                        type="button"
+                        onClick={() =>
+                          setCheckoutModal((prev) => ({
+                            ...prev,
+                            warrantyDays: pkg.days
+                          }))
+                        }
+                        className={`px-2.5 py-1 text-xs font-medium rounded border cursor-pointer ${
+                          checkoutModal.warrantyDays === pkg.days
+                            ? "bg-slate-800 text-white border-slate-800"
+                            : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                        }`}
+                      >
+                        {pkg.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Điều khoản bảo hành
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={checkoutModal.terms}
+                    onChange={(e) =>
+                      setCheckoutModal((prev) => ({ ...prev, terms: e.target.value }))
+                    }
+                    className="w-full p-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white resize-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Ghi chú hóa đơn
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ghi chú thêm..."
+                    value={checkoutModal.note}
+                    onChange={(e) =>
+                      setCheckoutModal((prev) => ({ ...prev, note: e.target.value }))
+                    }
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white"
+                  />
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setCheckoutModal((prev) => ({ ...prev, isOpen: false }))}
+                    className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={checkingOut}
+                    className="px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm disabled:opacity-50 cursor-pointer"
+                  >
+                    {checkingOut ? "Đang xử lý..." : "Xác nhận trả máy"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
-      {cannotRepairModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-5 border border-slate-200 space-y-3">
-            <h3 className="text-sm font-bold text-slate-900">
-              Lý do không thể sửa chữa
-            </h3>
-
-            <form onSubmit={handleCannotRepairSubmit} className="space-y-3">
-              <textarea
-                rows={3}
-                required
-                placeholder="Nhập lý do không thể khắc phục (ví dụ: hỏng main nặng, chập nguồn vô phương cứu...)"
-                value={cannotRepairModal.reason}
-                onChange={(e) =>
-                  setCannotRepairModal((prev) => ({ ...prev, reason: e.target.value }))
-                }
-                className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-red-600 focus:bg-white resize-none"
-              />
-
-              <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setCannotRepairModal({ isOpen: false, reason: "" })}
-                  className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
-                >
-                  Đóng
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm cursor-pointer"
-                >
-                  Xác nhận
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {zoomedImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80"
-          onClick={() => setZoomedImage(null)}
-        >
-          <div
-            className="relative max-w-3xl max-h-[85vh] bg-white rounded-xl overflow-hidden p-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setZoomedImage(null)}
-              className="absolute top-3 right-3 p-1.5 bg-slate-800 text-white rounded-full hover:bg-slate-900 cursor-pointer"
-            >
-              <X size={16} />
-            </button>
-            <img
-              src={zoomedImage}
-              alt="Ảnh hiện trạng phóng to"
-              className="max-h-[80vh] w-auto object-contain rounded"
+      <AnimatePresence>
+        {cannotRepairModal.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
+              onClick={() => setCannotRepairModal({ isOpen: false, reason: "" })}
             />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 12 }}
+              transition={{ type: "spring", stiffness: 420, damping: 28 }}
+              className="relative bg-white rounded-xl shadow-2xl w-full max-w-md p-5 border border-slate-200 z-10 overflow-hidden space-y-3"
+            >
+              <h3 className="text-sm font-bold text-slate-900">
+                Lý do không thể sửa chữa
+              </h3>
+
+              <form onSubmit={handleCannotRepairSubmit} className="space-y-3">
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Nhập lý do không thể khắc phục (ví dụ: hỏng main nặng, chập nguồn vô phương cứu...)"
+                  value={cannotRepairModal.reason}
+                  onChange={(e) =>
+                    setCannotRepairModal((prev) => ({ ...prev, reason: e.target.value }))
+                  }
+                  className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-red-600 focus:bg-white resize-none"
+                />
+
+                <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setCannotRepairModal({ isOpen: false, reason: "" })}
+                    className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+                  >
+                    Đóng
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm cursor-pointer"
+                  >
+                    Xác nhận
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {zoomedImage && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={() => setZoomedImage(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-slate-900/80 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 420, damping: 28 }}
+              className="relative max-w-3xl max-h-[85vh] bg-white rounded-xl overflow-hidden p-2 z-10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => setZoomedImage(null)}
+                className="absolute top-3 right-3 p-1.5 bg-slate-800 text-white rounded-full hover:bg-slate-900 cursor-pointer z-10 transition-colors"
+              >
+                <X size={16} />
+              </button>
+              <img
+                src={zoomedImage}
+                alt="Ảnh hiện trạng phóng to"
+                className="max-h-[80vh] w-auto object-contain rounded"
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <ConfirmModal
         isOpen={confirmConfig.isOpen}

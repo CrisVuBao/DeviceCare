@@ -4,9 +4,8 @@ import {
   Search,
   PhoneCall,
   Smartphone,
-  ShieldCheck,
   Lock,
-  Clock
+  Award
 } from "lucide-react";
 import repairApi from "../../api/repairApi";
 import { format } from "date-fns";
@@ -269,7 +268,7 @@ const PublicLookup = () => {
                       <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-emerald-900 flex items-center space-x-1.5">
-                            <ShieldCheck size={15} className="text-emerald-700" />
+                            <Award size={16} className="text-emerald-700" />
                             <span>Chính sách bảo hành</span>
                           </span>
                           <span

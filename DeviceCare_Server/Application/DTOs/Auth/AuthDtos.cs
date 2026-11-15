@@ -67,4 +67,24 @@ namespace DeviceCare.Application.DTOs.Auth
         [Required]
         public string Status { get; set; } = "Active";
     }
+
+    public class UpdateUserDto
+    {
+        [Required]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required]
+        [Phone]
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        public string? Position { get; set; }
+        public decimal Salary { get; set; }
+        public string? Role { get; set; }
+    }
+
+    public class ResetPasswordDto
+    {
+        [Required]
+        public string NewPassword { get; set; } = string.Empty;
+    }
 }
