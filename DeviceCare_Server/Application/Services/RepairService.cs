@@ -80,6 +80,7 @@ namespace DeviceCare.Application.Services
                 Id = r.RepairId,
                 RepairCode = r.RepairCode,
                 DeviceName = r.DeviceName,
+                SerialNumber = r.SerialNumber,
                 CustomerName = r.Customer?.FullName ?? "Unknown",
                 CustomerPhone = r.Customer?.PhoneNumber ?? "Unknown",
                 Status = r.Status,
@@ -102,6 +103,7 @@ namespace DeviceCare.Application.Services
                 Id = r.RepairId,
                 RepairCode = r.RepairCode,
                 DeviceName = r.DeviceName,
+                SerialNumber = r.SerialNumber,
                 CustomerName = r.Customer?.FullName ?? "Unknown",
                 CustomerPhone = r.Customer?.PhoneNumber ?? "Unknown",
                 Status = r.Status,
@@ -127,6 +129,7 @@ namespace DeviceCare.Application.Services
                 RepairCode = repair.RepairCode,
                 Status = repair.Status,
                 DeviceName = repair.DeviceName,
+                SerialNumber = repair.SerialNumber,
                 ErrorDescription = repair.ErrorDescription,
                 Note = repair.Note,
                 ImageUrl = repair.ImageUrl,
@@ -179,7 +182,7 @@ namespace DeviceCare.Application.Services
 
             if (repair.Warranty != null)
             {
-                int remainingDays = Math.Max(0, (repair.Warranty.EndDate.Date - DateTime.UtcNow.Date).Days);
+                int remainingDays = Math.Max(0, (repair.Warranty.EndDate.Date - _dateTimeProvider.UtcNow.Date).Days);
                 bool isExpired = remainingDays <= 0 && repair.Warranty.WarrantyDays > 0;
                 string statusText = FormatWarrantyStatusText(repair.Warranty.WarrantyDays, remainingDays);
 
@@ -219,6 +222,7 @@ namespace DeviceCare.Application.Services
             }
 
             repair.DeviceName = model.DeviceName.Trim();
+            repair.SerialNumber = model.SerialNumber?.Trim();
             repair.ErrorDescription = model.ErrorDescription?.Trim();
             repair.Note = model.Note?.Trim();
             if (!string.IsNullOrEmpty(model.ImageUrl)) repair.ImageUrl = model.ImageUrl;
@@ -397,6 +401,7 @@ namespace DeviceCare.Application.Services
                 {
                     RepairCode = r.RepairCode,
                     DeviceName = r.DeviceName,
+                    SerialNumber = r.SerialNumber,
                     CustomerName = r.Customer?.FullName ?? "Khách hàng",
                     ErrorDescription = r.ErrorDescription,
                     Status = r.Status,
@@ -414,7 +419,7 @@ namespace DeviceCare.Application.Services
 
                 if (r.Warranty != null)
                 {
-                    int remainingDays = Math.Max(0, (r.Warranty.EndDate.Date - DateTime.UtcNow.Date).Days);
+                    int remainingDays = Math.Max(0, (r.Warranty.EndDate.Date - _dateTimeProvider.UtcNow.Date).Days);
                     bool isExpired = remainingDays <= 0 && r.Warranty.WarrantyDays > 0;
                     string statusText = FormatWarrantyStatusText(r.Warranty.WarrantyDays, remainingDays);
 

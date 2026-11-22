@@ -1,0 +1,57 @@
+name: DeviceCare CI Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  backend-ci:
+    name: Backend Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore Backend Dependencies
+        run: dotnet restore DeviceCare_Server/DeviceCare.sln
+
+      - name: Build Backend Solution (Release)
+        run: dotnet build DeviceCare_Server/DeviceCare.sln --no-restore --configuration Release
+
+      - name: Run Backend Unit Tests
+        run: dotnet test DeviceCare_Server/DeviceCare.sln --no-build --configuration Release --verbosity normal
+
+  frontend-ci:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: DeviceCare_Frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: ./DeviceCare_Frontend
+        run: npm install
+
+      - name: Run Lint Check
+        working-directory: ./DeviceCare_Frontend
+        run: npm run lint
+
+      - name: Build Frontend Application
+        working-directory: ./DeviceCare_Frontend
+        run: npm run build

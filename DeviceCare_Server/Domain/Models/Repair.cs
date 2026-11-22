@@ -30,6 +30,9 @@ namespace DeviceCare.Domain.Models
         [MaxLength(150)]
         public string DeviceName { get; set; } = string.Empty;
 
+        [MaxLength(50)]
+        public string? SerialNumber { get; set; }
+
         public string? ErrorDescription { get; set; }
 
         public string? Note { get; set; }

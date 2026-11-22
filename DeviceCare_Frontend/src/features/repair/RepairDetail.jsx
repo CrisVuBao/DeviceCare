@@ -23,6 +23,7 @@ import {
 import repairApi from "../../api/repairApi";
 import inventoryApi from "../../api/inventoryApi";
 import ConfirmModal from "../../components/ConfirmModal";
+import PrintRepairModal from "./PrintRepairModal";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import toast from "react-hot-toast";
@@ -118,6 +119,7 @@ const RepairDetail = () => {
   const [editingInfo, setEditingInfo] = useState(false);
   const [infoForm, setInfoForm] = useState({
     deviceName: "",
+    serialNumber: "",
     errorDescription: "",
     note: "",
     laborCost: 0
@@ -147,6 +149,7 @@ const RepairDetail = () => {
   const [checkingOut, setCheckingOut] = useState(false);
 
   const [zoomedImage, setZoomedImage] = useState(null);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   const [confirmConfig, setConfirmConfig] = useState({
     isOpen: false,
@@ -167,6 +170,7 @@ const RepairDetail = () => {
         setRepair(res.data);
         setInfoForm({
           deviceName: res.data.deviceName || "",
+          serialNumber: res.data.serialNumber || "",
           errorDescription: res.data.errorDescription || "",
           note: res.data.note || "",
           laborCost: res.data.laborCost || 0
@@ -242,6 +246,7 @@ const RepairDetail = () => {
     try {
       const payload = {
         deviceName: infoForm.deviceName.trim(),
+        serialNumber: infoForm.serialNumber?.trim() || null,
         errorDescription: infoForm.errorDescription?.trim() || null,
         note: infoForm.note?.trim() || null,
         laborCost: Number(infoForm.laborCost) || 0
@@ -332,7 +337,8 @@ const RepairDetail = () => {
       if (res?.success) {
         toast.success("Xuất hóa đơn & trả máy thành công");
         setCheckoutModal((prev) => ({ ...prev, isOpen: false }));
-        fetchRepairDetail();
+        await fetchRepairDetail();
+        setShowPrintModal(true);
       } else {
         toast.error(res?.message || "Không thể hoàn tất thanh toán");
       }
@@ -446,7 +452,7 @@ const RepairDetail = () => {
           )}
 
           <button
-            onClick={() => window.print()}
+            onClick={() => setShowPrintModal(true)}
             className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
           >
             <Printer size={15} className="text-slate-600" />
@@ -598,13 +604,13 @@ const RepairDetail = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 text-sm">
                 <div>
-                  <span className="text-xs text-slate-400 block">Họ và tên:</span>
+                  <span className="text-xs text-slate-500 block">Họ và tên:</span>
                   <span className="font-semibold text-slate-900">
                     {repair.customer?.fullName || "Khách vãng lai"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 block">Số điện thoại:</span>
+                  <span className="text-xs text-slate-500 block">Số điện thoại:</span>
                   <span className="font-semibold text-slate-900 flex items-center space-x-1">
                     <PhoneCall size={14} className="text-slate-400" />
                     <span>{repair.customer?.phoneNumber || "Chưa có"}</span>
@@ -612,7 +618,7 @@ const RepairDetail = () => {
                 </div>
                 {repair.customer?.address && (
                   <div className="sm:col-span-2">
-                    <span className="text-xs text-slate-400 block">Địa chỉ:</span>
+                    <span className="text-xs text-slate-500 block">Địa chỉ:</span>
                     <span className="text-slate-700 flex items-center space-x-1">
                       <MapPin size={14} className="text-slate-400 shrink-0" />
                       <span>{repair.customer.address}</span>
@@ -654,6 +660,27 @@ const RepairDetail = () => {
                         }))
                       }
                       className="w-full px-3 py-1.5 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-700">
+                        Số Serial / IMEI
+                      </label>
+                      <span className="text-[10px] text-slate-400 font-normal">Tùy chọn</span>
+                    </div>
+                    <input
+                      type="text"
+                      value={infoForm.serialNumber}
+                      onChange={(e) =>
+                        setInfoForm((prev) => ({
+                          ...prev,
+                          serialNumber: e.target.value
+                        }))
+                      }
+                      placeholder="VD: 358741098765432 hoặc F2LW70..."
+                      className="w-full px-3 py-2 text-sm font-mono font-semibold bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white tracking-wide"
                     />
                   </div>
 
@@ -729,26 +756,38 @@ const RepairDetail = () => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 text-sm">
                   <div>
-                    <span className="text-xs text-slate-400 block">Thiết bị:</span>
+                    <span className="text-xs text-slate-500 block">Thiết bị:</span>
                     <span className="font-semibold text-slate-900">
                       {repair.deviceName}
                     </span>
                   </div>
                   <div>
-                    <span className="text-xs text-slate-400 block">Kỹ thuật viên:</span>
+                    <span className="text-xs text-slate-500 block">Kỹ thuật viên:</span>
                     <span className="font-semibold text-slate-900">
                       {repair.technicianName || "Chưa phân công"}
                     </span>
                   </div>
                   <div className="sm:col-span-2">
-                    <span className="text-xs text-slate-400 block">Mô tả lỗi:</span>
+                    <span className="text-xs text-slate-500 block mb-1">Số Serial / IMEI:</span>
+                    {repair.serialNumber ? (
+                      <span className="inline-block px-3 py-1 bg-slate-100 border border-slate-300 rounded-lg font-mono font-bold text-slate-900 text-sm tracking-wider shadow-2xs">
+                        {repair.serialNumber}
+                      </span>
+                    ) : (
+                      <span className="text-slate-800 italic font-sans text-xs">
+                        Chưa cập nhật (Bấm &quot;Sửa thông tin&quot; để bổ sung)
+                      </span>
+                    )}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <span className="text-xs text-slate-500 block">Mô tả lỗi:</span>
                     <p className="text-slate-800 bg-slate-50 p-2.5 rounded-lg border border-slate-200 mt-1">
                       {repair.errorDescription || "Chưa có mô tả chi tiết"}
                     </p>
                   </div>
                   {repair.note && (
                     <div className="sm:col-span-2">
-                      <span className="text-xs text-slate-400 block">Ghi chú:</span>
+                      <span className="text-xs text-slate-500 block">Ghi chú:</span>
                       <p className="text-slate-700 bg-amber-50/60 p-2.5 rounded-lg border border-amber-200 mt-1">
                         {repair.note}
                       </p>
@@ -1415,6 +1454,12 @@ const RepairDetail = () => {
         title={confirmConfig.title}
         message={confirmConfig.message}
         isDanger={confirmConfig.isDanger}
+      />
+
+      <PrintRepairModal
+        isOpen={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        repair={repair}
       />
     </div>
   );

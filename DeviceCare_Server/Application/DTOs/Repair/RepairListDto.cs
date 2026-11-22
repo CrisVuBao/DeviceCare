@@ -12,6 +12,7 @@ namespace DeviceCare.Application.DTOs.Repair
         }
         public string RepairCode { get; set; } = string.Empty;
         public string DeviceName { get; set; } = string.Empty;
+        public string? SerialNumber { get; set; }
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerPhone { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;

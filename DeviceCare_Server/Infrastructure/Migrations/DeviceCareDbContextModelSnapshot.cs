@@ -390,6 +390,10 @@ namespace DeviceCare.Infrastructure.Migrations
                     b.Property<DateTime?>("ReturnedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("SerialNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)

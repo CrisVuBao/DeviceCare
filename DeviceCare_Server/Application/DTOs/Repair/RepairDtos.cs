@@ -32,6 +32,7 @@ namespace DeviceCare.Application.DTOs.Repair
     {
         [Required]
         public string DeviceName { get; set; } = string.Empty;
+        public string? SerialNumber { get; set; }
         public string? ErrorDescription { get; set; }
         public string? Note { get; set; }
         public string? ImageUrl { get; set; }
@@ -82,6 +83,7 @@ namespace DeviceCare.Application.DTOs.Repair
         public string RepairCode { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string DeviceName { get; set; } = string.Empty;
+        public string? SerialNumber { get; set; }
         public string? ErrorDescription { get; set; }
         public string? Note { get; set; }
         public string? ImageUrl { get; set; }
@@ -166,6 +168,7 @@ namespace DeviceCare.Application.DTOs.Repair
     {
         public string RepairCode { get; set; } = string.Empty;
         public string DeviceName { get; set; } = string.Empty;
+        public string? SerialNumber { get; set; }
         public string CustomerName { get; set; } = string.Empty;
         public string? ErrorDescription { get; set; }
         public string Status { get; set; } = string.Empty;
